@@ -1,0 +1,58 @@
+document.addEventListener('DOMContentLoaded', () => {
+  const counters = document.querySelectorAll('[data-counter]');
+
+  const formatValue = (value, suffix = '') => {
+    const numericValue = Number(value);
+    if (numericValue >= 1000000) {
+      return `${(numericValue / 1000000).toFixed(1)}M${suffix}`;
+    }
+    if (numericValue >= 1000) {
+      return `${(numericValue / 1000).toFixed(1)}K${suffix}`;
+    }
+    return `${numericValue}${suffix}`;
+  };
+
+  const animateCounter = (counter) => {
+    const target = Number(counter.dataset.counter);
+    const suffix = counter.textContent.includes('$') ? '$' : '';
+    let current = 0;
+    const duration = 1600;
+    const start = performance.now();
+
+    const update = (now) => {
+      const progress = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      current = target * eased;
+
+      if (target >= 1000000) {
+        const formatted = `${(current / 1000000).toFixed(1)}M`;
+        counter.textContent = suffix === '$' ? `$${formatted}` : formatted;
+      } else if (target >= 1000) {
+        const formatted = `${(current / 1000).toFixed(1)}K`;
+        counter.textContent = suffix === '$' ? `$${formatted}` : formatted;
+      } else {
+        counter.textContent = suffix === '$' ? `$${Math.round(current)}` : `${Math.round(current)}`;
+      }
+
+      if (progress < 1) {
+        requestAnimationFrame(update);
+      }
+    };
+
+    requestAnimationFrame(update);
+  };
+
+  counters.forEach((counter) => {
+    counter.textContent = '0';
+    animateCounter(counter);
+  });
+
+  const orb = document.querySelector('.orb-core');
+  if (orb) {
+    document.addEventListener('pointermove', (event) => {
+      const x = (event.clientX / window.innerWidth - 0.5) * 14;
+      const y = (event.clientY / window.innerHeight - 0.5) * 14;
+      orb.style.transform = `rotateX(${(-y).toFixed(2)}deg) rotateY(${x.toFixed(2)}deg)`;
+    });
+  }
+});
